@@ -1,0 +1,17 @@
+[DefCore]
+id=WoodenBridge
+Version=6,0
+Category=C4D_Structure
+Width=60
+Height=11
+SolidMask=0,0,60,5
+Offset=-30,-6
+Vertices=4
+VertexX=-30, 30, -30, 30
+VertexY=-6,6,6, -6
+VertexFriction=50,50,50,100,100
+Value=200
+Mass=100
+Components=Wood=2
+Exclusive=1
+Construction=1

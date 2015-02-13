@@ -1,5 +1,5 @@
 /**
-	ConstructionSite
+	Construction Site
 	Needs material put into it, then constructs the set building.
 
 	@author boni
@@ -12,7 +12,7 @@ local full_material; // true when all needed material is in the site
 local no_cancel; // if true, site cannot be cancelled
 local is_constructing;
 
-public func IsContainer()		{ return !full_material; }
+public func IsContainer() { return !full_material; }
 // disallow taking stuff out
 public func RefuseTransfer(object toMove) { return true; }
 // disallow site cancellation. Useful e.g. for sites that are pre-placed for a game goal
@@ -52,23 +52,27 @@ public func Set(id def, int dir, object stick)
 	if (!def->~SetConstructionSiteOverlay(this, direction, stick_to))
 	{
 		SetGraphics(nil, def, 1, GFXOV_MODE_Base);
-		SetClrModulation(RGBa(255,255,255,50), 1);
+		SetClrModulation(RGBa(255, 255, 255, 50), 1);
 		SetGraphics(nil, def, 2, GFXOV_MODE_Base, nil, GFX_BLIT_Wireframe);
 	}
-	SetObjDrawTransform(xw,0,0,0,1000, -h*500,1);
-	SetObjDrawTransform(xw,0,0,0,1000, -h*500,2);
+	SetObjDrawTransform(xw, 0, 0, 0, 1000, -h * 500, 1);
+	SetObjDrawTransform(xw, 0, 0, 0, 1000, -h  *500, 2);
 	// Height of construction site needs to exceed 12 pixels for the clonk to be able to add materials.
 	h = Max(12, h);
 	SetShape(-w/2, -h, w, h);
 	// Increase shape for below surface constructions to allow for adding materials.
 	if (definition->~IsBelowSurfaceConstruction())
 		SetShape(-w/2, -2 * h, w, 2 * h);
+	var area = definition->~HasSpecialConstructionSiteArea();
+	if (area)
+		SetShape(area.x, area.y, area.w, area.h);
 	
-	SetName(Format(Translate("TxtConstruction"),def->GetName()));
+	SetName(Format(Translate("TxtConstruction"), def->GetName()));
 	
 	this.visibility = VIS_Owner | VIS_Allies;
 	
 	ShowMissingComponents();
+	return;
 }
 
 // Scenario saving
@@ -99,17 +103,17 @@ public func RejectCollect(id def, object obj)
 public func Collection2(object obj)
 {
 	// Ignore any activity during construction
-	if (is_constructing) return;
-	
+	if (is_constructing) 
+		return;
 	// update message
 	ShowMissingComponents();
-	
 	// Update preview image
-	if (definition) definition->~SetConstructionSiteOverlay(this, direction, stick_to, obj);
-	
+	if (definition) 
+		definition->~SetConstructionSiteOverlay(this, direction, stick_to, obj);
 	// check if we're done?
 	if(full_material)
 		StartConstructing();
+	return;
 }
 
 // component removed (e.g.: Contained wood burned down or some externel scripts went havoc)
@@ -205,8 +209,8 @@ private func StartConstructing()
 	// create the construction, below surface constructions don't perform any checks.
 	// uncancellable sites (for special game goals) are forced and don't do checks either
 	var site;
-	var checks = !definition->~IsBelowSurfaceConstruction() && !no_cancel;
-	if(!(site = CreateConstruction(definition, 0, 0, GetOwner(), 1, checks, checks)))
+	var checks = !definition->~IsBelowSurfaceConstruction() && !definition->~HasNoConstructionSiteChecks() && !no_cancel;
+	if (!(site = CreateConstruction(definition, 0, 0, GetOwner(), 1, checks, checks)))
 	{
 		// spit out error message. This could happen if the landscape changed in the meantime
 		// a little hack: the message would immediately vanish because this object is deleted. So, instead display the

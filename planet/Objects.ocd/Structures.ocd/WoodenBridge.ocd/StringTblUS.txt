@@ -1,0 +1,2 @@
+Name=Bridge
+Description=Connecting clonks.

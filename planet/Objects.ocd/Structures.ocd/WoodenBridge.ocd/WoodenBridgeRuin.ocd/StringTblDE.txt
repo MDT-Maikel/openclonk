@@ -1,0 +1,2 @@
+Name=Kaputte Brücke
+Description=Jemand hat nicht aufgepasst.

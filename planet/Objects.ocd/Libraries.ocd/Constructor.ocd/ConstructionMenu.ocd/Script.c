@@ -22,16 +22,16 @@ global func CreateConstructionMenu(object constructor, bool create_at_mouse_pos)
 	if (!(this->~HasMenuControl())) return;
 
 	// Create the menu controller.
-	var controller = CreateObjectAbove(Library_ConstructionMenu);
+	var controller = CreateObject(Library_ConstructionMenu);
 	controller->SetMenuObject(this);
 	this->SetMenu(controller);
 	controller->SetCommander(constructor);
 	
-	if(create_at_mouse_pos)
+	if (create_at_mouse_pos)
 	{
-		var xy = GetPlayerCursorPos(constructor->GetController());
-		if(xy)
-			controller->SetPosition(xy[0],xy[1],true);
+		var mouse_pos = GetPlayerCursorPos(constructor->GetController());
+		if (mouse_pos)
+			controller->SetPosition(mouse_pos[0], mouse_pos[1], true);
 	}
 	
 	// Add all possible structures to the menu.
@@ -52,9 +52,16 @@ protected func Construction()
 
 public func AddMenuStructures(object constructor, object clonk)
 {
-	for (var structure in constructor->GetConstructionPlans(clonk->GetOwner()))
+	// Get the available knowledge for this player.
+	var plr = clonk->GetOwner();
+	var construction_plans = [];
+	var construct_id, index = 0;
+	while (construct_id = GetPlrKnowledge(plr, nil, index++, C4D_Structure))
+		construction_plans[index-1] = construct_id;
+	// Then add all plans to the menu.
+	for (var structure in construction_plans)
 	{
-		var item = CreateObjectAbove(GUI_MenuItem);
+		var item = CreateObject(GUI_MenuItem);
 		if (!AddItem(item))
 			return item->RemoveObject();
 		item->SetSymbol(structure);
@@ -90,12 +97,9 @@ private func ShowConstructionInfo(object item)
 	CustomMessage(cost_msg, this, GetOwner(), 250, 250, nil, nil, nil, 1|2);
 	constructinfo_shown = item;
 	
-	
-	
-	// show big picture
+	// Show big picture.
 	SetGraphics(nil, structure_id, 1, GFXOV_MODE_IngamePicture);
 	SetObjDrawTransform(400, 0, 270000, 0, 400, -50000, 1);
-	
 	return;
 }
 
@@ -133,8 +137,7 @@ public func OnItemSelection(object item)
 {
 	if (menu_commander)
 	{
-		// Close menu if a construction site has been created.
-		//if (menu_commander->~CreateConstructionSite(menu_object, item->GetSymbol()))
+		// Close menu if the construction preview has been opened.
 		if (menu_commander->~ShowConstructionPreview(menu_object, item->GetSymbol()))
 		{
 			Close();
